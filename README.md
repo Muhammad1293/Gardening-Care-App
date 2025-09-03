@@ -2,10 +2,6 @@
 
 A Web-Based Gardening Care Application developed as part of our BS-IT Final Year Project (Virtual University of Pakistan). This project helps gardeners, homeowners, and supervisors manage their gardens effectively through plant tracking, personalized care recommendations, and an interactive plant database.
 
-👥 Team Collaboration
-
-This project was completed with the collaboration of my teammate Mehak. We worked together on analysis, design, development, and testing, strictly following our SRS Document, Design Diagrams, and the VU Process Model (Hybrid Waterfall + Spiral).
-
 🚀 Features
 
 ✅ User Registration & Profile Management – Manage personal information, gardening preferences, and roles (Gardener, Supervisor, Homeowner, Admin).
@@ -93,9 +89,4 @@ Real-time IoT integration for soil moisture and temperature sensors.
 Advanced analytics dashboard for supervisors.
 
 
-📌 GitHub Repository
-
-🔗 Gardening Care App on GitHub
-
-✨ Developed with dedication and teamwork by Muhammad Ramzan & Mehak
 
