@@ -5,12 +5,19 @@ A Web-Based Gardening Care Application developed as part of our BS-IT Final Year
 🚀 Features
 
 ✅ User Registration & Profile Management – Manage personal information, gardening preferences, and roles (Gardener, Supervisor, Homeowner, Admin).
+
 ✅ Plant Database (Search Plants) – Search flower, vegetable, and fruit plants by name, category, and attributes.
+
 ✅ Personalized Plant Care Recommendations – Suggestions based on location, climate, and soil type with watering, fertilization, and pest control tips.
+
 ✅ Plant Tracking & Monitoring – Track plant growth, health indicators, and set reminders.
+
 ✅ Interactive Tools & Resources – Plant identification guides, garden planners, and disease diagnosis.
+
 ✅ Community Features – Gardening forums, local groups, and social media sharing.
+
 ✅ Alerts & Notifications – Weather updates and plant care reminders.
+
 ✅ Integration with External Services – Weather APIs and gardening store partnerships.
 
 🛠️ Technologies Used
