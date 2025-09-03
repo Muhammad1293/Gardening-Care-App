@@ -76,14 +76,20 @@ git clone https://github.com/Muhammad1293/Gardening-Care-App.git
 cd Gardening-Care-App
 
 Backend Setup
+
 cd backend
+
 npm install
+
 npm start
 
 
 Frontend Setup
+
 cd frontend
+
 npm install
+
 npm start
 
 
