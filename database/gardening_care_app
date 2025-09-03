@@ -1,0 +1,1209 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 17.5
+-- Dumped by pg_dump version 17.5
+
+-- Started on 2025-08-31 01:27:10
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 237 (class 1255 OID 16388)
+-- Name: update_timestamp(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.update_timestamp() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION public.update_timestamp() OWNER TO postgres;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 217 (class 1259 OID 16389)
+-- Name: articles; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.articles (
+    id integer NOT NULL,
+    title text NOT NULL,
+    content text NOT NULL,
+    image_url text,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.articles OWNER TO postgres;
+
+--
+-- TOC entry 218 (class 1259 OID 16395)
+-- Name: articles_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.articles_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.articles_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4921 (class 0 OID 0)
+-- Dependencies: 218
+-- Name: articles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.articles_id_seq OWNED BY public.articles.id;
+
+
+--
+-- TOC entry 219 (class 1259 OID 16396)
+-- Name: garden_plans; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.garden_plans (
+    id integer NOT NULL,
+    user_id integer,
+    section text NOT NULL,
+    plant text NOT NULL,
+    notes text,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.garden_plans OWNER TO postgres;
+
+--
+-- TOC entry 220 (class 1259 OID 16402)
+-- Name: garden_plans_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.garden_plans_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.garden_plans_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4922 (class 0 OID 0)
+-- Dependencies: 220
+-- Name: garden_plans_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.garden_plans_id_seq OWNED BY public.garden_plans.id;
+
+
+--
+-- TOC entry 221 (class 1259 OID 16403)
+-- Name: growth_logs; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.growth_logs (
+    id integer NOT NULL,
+    tracking_id integer,
+    growth_stage character varying(100),
+    height_cm numeric(5,2),
+    image_url text,
+    logged_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT growth_logs_growth_stage_check CHECK (((growth_stage)::text = ANY ((ARRAY['Seedling'::character varying, 'Vegetative'::character varying, 'Budding'::character varying, 'Flowering'::character varying, 'Fruiting'::character varying, 'Mature'::character varying])::text[])))
+);
+
+
+ALTER TABLE public.growth_logs OWNER TO postgres;
+
+--
+-- TOC entry 222 (class 1259 OID 16410)
+-- Name: growth_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.growth_logs_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.growth_logs_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4923 (class 0 OID 0)
+-- Dependencies: 222
+-- Name: growth_logs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.growth_logs_id_seq OWNED BY public.growth_logs.id;
+
+
+--
+-- TOC entry 223 (class 1259 OID 16411)
+-- Name: health_monitoring; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.health_monitoring (
+    id integer NOT NULL,
+    tracking_id integer,
+    moisture_level character varying(50),
+    pest_presence boolean DEFAULT false,
+    nutrient_deficiency character varying(100),
+    recorded_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT health_monitoring_moisture_level_check CHECK (((moisture_level)::text = ANY (ARRAY[('High'::character varying)::text, ('Medium'::character varying)::text, ('Low'::character varying)::text, ('Critical'::character varying)::text])))
+);
+
+
+ALTER TABLE public.health_monitoring OWNER TO postgres;
+
+--
+-- TOC entry 224 (class 1259 OID 16417)
+-- Name: health_monitoring_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.health_monitoring_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.health_monitoring_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4924 (class 0 OID 0)
+-- Dependencies: 224
+-- Name: health_monitoring_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.health_monitoring_id_seq OWNED BY public.health_monitoring.id;
+
+
+--
+-- TOC entry 225 (class 1259 OID 16418)
+-- Name: observations; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.observations (
+    id integer NOT NULL,
+    tracking_id integer,
+    note text NOT NULL,
+    observation_type character varying(50),
+    recorded_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT observations_observation_type_check CHECK (((observation_type)::text = ANY (ARRAY[('Growth'::character varying)::text, ('Pests'::character varying)::text, ('Diseases'::character varying)::text, ('Fertilization'::character varying)::text, ('General'::character varying)::text])))
+);
+
+
+ALTER TABLE public.observations OWNER TO postgres;
+
+--
+-- TOC entry 226 (class 1259 OID 16425)
+-- Name: observations_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.observations_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.observations_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4925 (class 0 OID 0)
+-- Dependencies: 226
+-- Name: observations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.observations_id_seq OWNED BY public.observations.id;
+
+
+--
+-- TOC entry 227 (class 1259 OID 16426)
+-- Name: plant_care_recommendations; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.plant_care_recommendations (
+    id integer NOT NULL,
+    plant_name character varying(100),
+    category character varying(50) NOT NULL,
+    location character varying(100) NOT NULL,
+    climate character varying(50) NOT NULL,
+    soil_type character varying(50) NOT NULL,
+    watering_schedule text NOT NULL,
+    fertilization_plan text NOT NULL,
+    pest_control text NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    recommended_plants text
+);
+
+
+ALTER TABLE public.plant_care_recommendations OWNER TO postgres;
+
+--
+-- TOC entry 228 (class 1259 OID 16432)
+-- Name: plant_care_recommendations_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.plant_care_recommendations_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.plant_care_recommendations_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4926 (class 0 OID 0)
+-- Dependencies: 228
+-- Name: plant_care_recommendations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.plant_care_recommendations_id_seq OWNED BY public.plant_care_recommendations.id;
+
+
+--
+-- TOC entry 229 (class 1259 OID 16433)
+-- Name: plant_tracking; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.plant_tracking (
+    id integer NOT NULL,
+    user_id integer,
+    plant_id integer,
+    nickname character varying(255),
+    date_added timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    last_updated timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.plant_tracking OWNER TO postgres;
+
+--
+-- TOC entry 230 (class 1259 OID 16438)
+-- Name: plant_tracking_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.plant_tracking_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.plant_tracking_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4927 (class 0 OID 0)
+-- Dependencies: 230
+-- Name: plant_tracking_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.plant_tracking_id_seq OWNED BY public.plant_tracking.id;
+
+
+--
+-- TOC entry 231 (class 1259 OID 16439)
+-- Name: plants; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.plants (
+    id integer NOT NULL,
+    name character varying(100) NOT NULL,
+    category character varying(50) NOT NULL,
+    sunlight_requirement character varying(50),
+    water_requirement character varying(50),
+    soil_type character varying(50),
+    climate character varying(50),
+    growth_stage character varying(50),
+    age integer,
+    care_instructions text,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT plants_category_check CHECK (((category)::text = ANY (ARRAY[('Flowering'::character varying)::text, ('Vegetable'::character varying)::text, ('Fruit'::character varying)::text])))
+);
+
+
+ALTER TABLE public.plants OWNER TO postgres;
+
+--
+-- TOC entry 232 (class 1259 OID 16446)
+-- Name: plants_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.plants_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.plants_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4928 (class 0 OID 0)
+-- Dependencies: 232
+-- Name: plants_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.plants_id_seq OWNED BY public.plants.id;
+
+
+--
+-- TOC entry 233 (class 1259 OID 16447)
+-- Name: reminders; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.reminders (
+    id integer NOT NULL,
+    tracking_id integer,
+    reminder_type character varying(50),
+    reminder_date timestamp without time zone NOT NULL,
+    frequency character varying(20),
+    status character varying(20) DEFAULT 'Pending'::character varying,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    is_done boolean DEFAULT false,
+    CONSTRAINT reminders_reminder_type_check CHECK (((reminder_type)::text = ANY (ARRAY[('Watering'::character varying)::text, ('Repotting'::character varying)::text, ('Pruning'::character varying)::text, ('Fertilization'::character varying)::text, ('Pest Control'::character varying)::text]))),
+    CONSTRAINT reminders_status_check CHECK (((status)::text = ANY (ARRAY[('Pending'::character varying)::text, ('Completed'::character varying)::text])))
+);
+
+
+ALTER TABLE public.reminders OWNER TO postgres;
+
+--
+-- TOC entry 234 (class 1259 OID 16455)
+-- Name: reminders_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.reminders_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.reminders_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4929 (class 0 OID 0)
+-- Dependencies: 234
+-- Name: reminders_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.reminders_id_seq OWNED BY public.reminders.id;
+
+
+--
+-- TOC entry 235 (class 1259 OID 16456)
+-- Name: users; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.users (
+    user_id integer NOT NULL,
+    username character varying(50) NOT NULL,
+    email character varying(100) NOT NULL,
+    password_hash text NOT NULL,
+    role character varying(20) NOT NULL,
+    location character varying(255),
+    climate character varying(100),
+    soil_type character varying(100),
+    gardening_preferences text[],
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT users_role_check CHECK (((role)::text = ANY (ARRAY[('Gardener'::character varying)::text, ('Supervisor'::character varying)::text, ('Homeowner'::character varying)::text, ('Admin'::character varying)::text])))
+);
+
+
+ALTER TABLE public.users OWNER TO postgres;
+
+--
+-- TOC entry 236 (class 1259 OID 16464)
+-- Name: users_user_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.users_user_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.users_user_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4930 (class 0 OID 0)
+-- Dependencies: 236
+-- Name: users_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.users_user_id_seq OWNED BY public.users.user_id;
+
+
+--
+-- TOC entry 4687 (class 2604 OID 16465)
+-- Name: articles id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.articles ALTER COLUMN id SET DEFAULT nextval('public.articles_id_seq'::regclass);
+
+
+--
+-- TOC entry 4689 (class 2604 OID 16466)
+-- Name: garden_plans id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.garden_plans ALTER COLUMN id SET DEFAULT nextval('public.garden_plans_id_seq'::regclass);
+
+
+--
+-- TOC entry 4691 (class 2604 OID 16467)
+-- Name: growth_logs id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.growth_logs ALTER COLUMN id SET DEFAULT nextval('public.growth_logs_id_seq'::regclass);
+
+
+--
+-- TOC entry 4693 (class 2604 OID 16468)
+-- Name: health_monitoring id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.health_monitoring ALTER COLUMN id SET DEFAULT nextval('public.health_monitoring_id_seq'::regclass);
+
+
+--
+-- TOC entry 4696 (class 2604 OID 16469)
+-- Name: observations id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.observations ALTER COLUMN id SET DEFAULT nextval('public.observations_id_seq'::regclass);
+
+
+--
+-- TOC entry 4698 (class 2604 OID 16470)
+-- Name: plant_care_recommendations id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.plant_care_recommendations ALTER COLUMN id SET DEFAULT nextval('public.plant_care_recommendations_id_seq'::regclass);
+
+
+--
+-- TOC entry 4700 (class 2604 OID 16471)
+-- Name: plant_tracking id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.plant_tracking ALTER COLUMN id SET DEFAULT nextval('public.plant_tracking_id_seq'::regclass);
+
+
+--
+-- TOC entry 4703 (class 2604 OID 16472)
+-- Name: plants id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.plants ALTER COLUMN id SET DEFAULT nextval('public.plants_id_seq'::regclass);
+
+
+--
+-- TOC entry 4705 (class 2604 OID 16473)
+-- Name: reminders id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.reminders ALTER COLUMN id SET DEFAULT nextval('public.reminders_id_seq'::regclass);
+
+
+--
+-- TOC entry 4709 (class 2604 OID 16474)
+-- Name: users user_id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users ALTER COLUMN user_id SET DEFAULT nextval('public.users_user_id_seq'::regclass);
+
+
+--
+-- TOC entry 4896 (class 0 OID 16389)
+-- Dependencies: 217
+-- Data for Name: articles; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.articles VALUES (9, 'Seasonal Gardening Tips – How to Care for Your Garden Year-Round', 'Gardening isn’t just a spring or summer hobby—it’s a year-round commitment. Here''s how to take care of your garden through the seasons.
+
+🌷 Spring
+Prepare the Soil: Add compost or organic matter.
+
+Start Planting: Sow seeds for vegetables, herbs, and annuals.
+
+Prune Shrubs: Cut back dead branches before new growth appears.
+
+☀️ Summer
+Water Frequently: Especially during heatwaves. Use mulch to retain moisture.
+
+Pest Control: Monitor for aphids, mites, and fungal infections.
+
+Deadhead Flowers: Remove spent blooms to encourage more flowering.
+
+🍂 Fall
+Harvest & Clean Up: Pick ripe vegetables and remove decaying plants.
+
+Plant Bulbs: Tulips, daffodils, and garlic thrive when planted now.
+
+Compost Leaves: Turn fallen leaves into nutrient-rich compost.
+
+❄️ Winter
+Protect Plants: Use covers or bring potted plants indoors.
+
+Plan Ahead: Sketch your garden layout and order seeds.
+
+Maintain Tools: Clean, sharpen, and store your gardening tools.
+
+📅 Each season brings new tasks—but also fresh opportunities to grow!', '/uploads/1750958964302-photo-1501004318641-b39e6451bec6.jpg', '2025-06-26 22:29:24.31519');
+INSERT INTO public.articles VALUES (10, ' Eco-Friendly Gardening: Sustainable Practices for a Greener Garden', 'Want to garden in a way that’s good for the planet? These eco-friendly gardening tips help you grow sustainably and responsibly.
+
+Compost Kitchen Scraps
+Turn fruit peels, coffee grounds, and eggshells into rich, organic fertilizer.
+
+Collect Rainwater
+Use rain barrels to water your plants and reduce your water bill.
+
+Plant Native Species
+Native plants need less water and attract beneficial pollinators like bees and butterflies.
+
+Use Organic Fertilizers
+Avoid synthetic chemicals. Compost, worm castings, and seaweed extract are excellent alternatives.
+
+Avoid Plastic Pots
+Choose biodegradable seed trays, clay pots, or upcycled containers.
+
+Grow Your Own Food
+Even a small herb garden reduces your carbon footprint and food waste.
+
+Natural Pest Control
+Introduce ladybugs, spiders, and birds that eat pests. Use garlic spray or neem oil instead of chemicals.
+
+Save Seeds
+Let some plants flower and collect their seeds for the next season.
+
+Reduce Lawn Area
+Replace grass with low-maintenance ground covers or native shrubs to save water and energy.
+
+Encourage Pollinators
+Grow flowers like lavender, echinacea, and sunflowers to support bees and butterflies.
+
+🌎 Every sustainable choice in your garden helps protect our planet.', '/uploads/1750959001594-istockphoto-469538141-612x612.jpg', '2025-06-26 22:30:01.607336');
+INSERT INTO public.articles VALUES (11, 'Top 10 Essential Gardening Tips for Beginners', 'Starting a garden can be rewarding, relaxing, and fun! If you''re just beginning your gardening journey, these ten essential tips will help you grow healthy and beautiful plants. Start Small Begin with a few easy-to-grow plants like basil, marigolds, or cherry tomatoes. It helps you learn the basics without feeling overwhelmed. Choose the Right Spot Most plants need at least 6 hours of sunlight. Observe your garden and pick a spot that gets enough natural light. Know Your Soil Test your soil’s pH and texture. Loamy soil, enriched with compost, provides the best environment for most plants. Pick the Right Plants Select plants that suit your climate and soil. Native plants usually require less maintenance and are more resistant to local pests. Water Wisely Water deeply but less frequently to encourage strong root growth. Early morning is the best time to water. Use Quality Tools Invest in good gloves, pruners, a trowel, and a watering can. Sharp and clean tools make gardening safer and easier. Mulch Your Garden Mulch retains moisture, suppresses weeds, and improves soil quality. Use straw, wood chips, or shredded leaves. Watch for Pests Check the underside of leaves regularly for bugs. Use natural pest repellents like neem oil or introduce ladybugs. Don’t Over-Fertilize Too much fertilizer can harm plants. Use compost or follow package directions strictly for synthetic options. Be Patient and Observe Gardening takes time. Observe your plants regularly and learn what they respond best to. 🪴 Remember: A garden grows best when the gardener is present.', '/uploads/1756556010253-1750958933350-agriculture-plant-seeding-growing-step-concept-garden-su-agriculture-plant-seeding-growing-step-concept-garden-99609915.webp', '2025-08-30 17:13:30.268101');
+
+
+--
+-- TOC entry 4898 (class 0 OID 16396)
+-- Dependencies: 219
+-- Data for Name: garden_plans; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.garden_plans VALUES (9, 13, 'RoofTop', 'Potato', 'Needs Water Daily', '2025-08-30 18:26:36.102587');
+
+
+--
+-- TOC entry 4900 (class 0 OID 16403)
+-- Dependencies: 221
+-- Data for Name: growth_logs; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.growth_logs VALUES (57, 106, 'Flowering', 2.00, '', '2025-06-25 00:00:00');
+INSERT INTO public.growth_logs VALUES (59, 103, 'Vegetative', 3.00, '', '2025-06-26 00:00:00');
+INSERT INTO public.growth_logs VALUES (84, 108, 'Mature', 2.00, '/uploads/growth_logs/log_1750973656242.jpg', '2025-06-27 00:00:00');
+INSERT INTO public.growth_logs VALUES (85, 108, 'Flowering', 3.00, '/uploads/growth_logs/log_1750975188496.jpg', '2025-06-26 00:00:00');
+INSERT INTO public.growth_logs VALUES (87, 110, 'Flowering', 1.00, '/uploads/growth_logs/log_1756553302065.jpg', '2025-08-30 00:00:00');
+
+
+--
+-- TOC entry 4902 (class 0 OID 16411)
+-- Dependencies: 223
+-- Data for Name: health_monitoring; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.health_monitoring VALUES (14, 106, 'Low', true, 'Nitrogen Deficiency', '2025-06-24 14:48:22.507564');
+INSERT INTO public.health_monitoring VALUES (19, 106, 'High', true, 'Nitrogen Deficiency', '2025-06-25 05:19:23.940317');
+INSERT INTO public.health_monitoring VALUES (21, 108, 'Low', true, 'Nitrogen Deficiency', '2025-06-28 20:02:44.540588');
+INSERT INTO public.health_monitoring VALUES (22, 110, 'Low', true, 'Nitrogen Deficiency', '2025-08-30 16:32:37.986463');
+
+
+--
+-- TOC entry 4904 (class 0 OID 16418)
+-- Dependencies: 225
+-- Data for Name: observations; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.observations VALUES (12, 106, 'growing', 'Growth', '2025-06-26 00:00:00');
+INSERT INTO public.observations VALUES (14, 110, 'Growing', 'Growth', '2025-08-30 00:00:00');
+
+
+--
+-- TOC entry 4906 (class 0 OID 16426)
+-- Dependencies: 227
+-- Data for Name: plant_care_recommendations; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.plant_care_recommendations VALUES (22, 'Mango Tree', 'Fruit', 'Karachi', 'Tropical', 'Loamy', 'Water every 5 days', 'Use nitrogen-rich fertilizer monthly', 'Check for mealybugs, spray neem oil', '2025-03-18 13:22:37.818572', NULL);
+INSERT INTO public.plant_care_recommendations VALUES (23, 'Tomato', 'Vegetable', 'Lahore', 'Tropical', 'Sandy', 'Water every 2 days', 'Use compost every 2 weeks', 'Use organic insecticide for whiteflies', '2025-03-18 13:22:37.818572', NULL);
+INSERT INTO public.plant_care_recommendations VALUES (24, 'Apple Tree', 'Fruit', 'Islamabad', 'Temperate', 'Loamy', 'Water weekly', 'Use phosphorus-rich fertilizer in spring', 'Protect against aphids with soap spray', '2025-03-18 13:22:37.818572', NULL);
+INSERT INTO public.plant_care_recommendations VALUES (25, 'Banana Plant', 'Fruit', 'Mumbai', 'Subtropical', 'Loamy', 'Water every 3 days', 'Use potassium-based fertilizer every 2 weeks', 'Prevent fungal infections with copper spray', '2025-03-18 13:22:37.818572', NULL);
+INSERT INTO public.plant_care_recommendations VALUES (26, 'Cactus', 'Succulent', 'Delhi', 'Arid', 'Sandy', 'Water once a month', 'No fertilization needed', 'Keep soil dry to avoid root rot', '2025-03-18 13:22:37.818572', NULL);
+INSERT INTO public.plant_care_recommendations VALUES (27, 'Date Palm', 'Fruit', 'Dubai', 'Arid', 'Sandy', 'Water every 10 days', 'Use slow-release nitrogen fertilizer', 'Prevent red palm weevil with pheromone traps', '2025-03-18 13:22:37.818572', NULL);
+INSERT INTO public.plant_care_recommendations VALUES (28, 'Olive Tree', 'Fruit', 'Riyadh', 'Arid', 'Clay', 'Water every 2 weeks', 'Use organic compost yearly', 'Spray horticultural oil for scale insects', '2025-03-18 13:22:37.818572', NULL);
+INSERT INTO public.plant_care_recommendations VALUES (29, 'Coconut Tree', 'Fruit', 'Dhaka', 'Tropical', 'Peaty', 'Water every 4 days', 'Use potassium and boron-rich fertilizer', 'Remove fallen leaves to prevent fungal growth', '2025-03-18 13:22:37.818572', NULL);
+INSERT INTO public.plant_care_recommendations VALUES (30, 'Peach Tree', 'Fruit', 'Kathmandu', 'Temperate', 'Silty', 'Water twice a week', 'Apply balanced NPK fertilizer in early spring', 'Use sticky traps for fruit flies', '2025-03-18 13:22:37.818572', NULL);
+INSERT INTO public.plant_care_recommendations VALUES (31, 'Ginseng', 'Herb', 'Beijing', 'Cool', 'Chalky', 'Water every 3 days', 'Use organic mulch to retain moisture', 'Control aphids with garlic spray', '2025-03-18 13:22:37.818572', NULL);
+INSERT INTO public.plant_care_recommendations VALUES (32, 'Cherry Blossom', 'Flowering', 'Tokyo', 'Temperate', 'Sandy', 'Water weekly', 'Use phosphate-based fertilizer before bloom', 'Monitor for caterpillars, hand-pick if needed', '2025-03-18 13:22:37.818572', NULL);
+INSERT INTO public.plant_care_recommendations VALUES (33, 'Grapevine', 'Fruit', 'Berlin', 'Continental', 'Loamy', 'Water weekly', 'Use organic fertilizer in early spring', 'Protect from powdery mildew with sulfur spray', '2025-03-18 13:22:37.818572', NULL);
+INSERT INTO public.plant_care_recommendations VALUES (34, 'Rose', 'Flowering', 'London', 'Temperate', 'Clay', 'Water every 3 days', 'Use compost tea every month', 'Check for black spot fungus, prune infected leaves', '2025-03-18 13:22:37.818572', NULL);
+INSERT INTO public.plant_care_recommendations VALUES (35, 'Lavender', 'Herb', 'Los Angeles', 'Mediterranean', 'Loamy', 'Water every 2 weeks', 'No heavy fertilization needed', 'Ensure good air circulation to prevent mold', '2025-03-18 13:22:37.818572', NULL);
+INSERT INTO public.plant_care_recommendations VALUES (36, 'Blueberry Bush', 'Fruit', 'New York', 'Temperate', 'Sandy', 'Water every 5 days', 'Use acidic soil fertilizer', 'Protect from birds with netting', '2025-03-18 13:22:37.818572', NULL);
+INSERT INTO public.plant_care_recommendations VALUES (37, 'Pine Tree', 'Tree', 'Toronto', 'Polar', 'Peaty', 'Water only in summer', 'Apply mulch before winter', 'Check for needle blight, treat with fungicide', '2025-03-18 13:22:37.818572', NULL);
+INSERT INTO public.plant_care_recommendations VALUES (38, 'Aloe Vera', 'Flowering', 'Karachi', 'Tropical', 'Loamy', 'Water 2 times a week', 'Use organic compost monthly', 'Spray neem oil bi-weekly', '2024-06-15 00:00:00', 'Aloe Vera, Tulsi');
+INSERT INTO public.plant_care_recommendations VALUES (39, 'Tulsi', 'Flowering', 'Lahore', 'Temperate', 'Sandy', 'Water 3 times a week', 'Use liquid fertilizer monthly', 'Spray insecticidal soap bi-weekly', '2024-06-16 00:00:00', 'Tulsi, Aloe Vera');
+INSERT INTO public.plant_care_recommendations VALUES (40, 'Money Plant', 'Flowering', 'Islamabad', 'Cool', 'Clay', 'Water 2 times a week', 'Use balanced NPK fertilizer monthly', 'Spray garlic spray bi-weekly', '2024-06-17 00:00:00', 'Money Plant, Jasmine');
+INSERT INTO public.plant_care_recommendations VALUES (41, 'Snake Plant', 'Flowering', 'Multan', 'Arid', 'Silty', 'Water 1 time a week', 'Use organic compost monthly', 'Spray neem oil bi-weekly', '2024-06-18 00:00:00', 'Snake Plant, Hibiscus');
+INSERT INTO public.plant_care_recommendations VALUES (42, 'Lavender', 'Flowering', 'Faisalabad', 'Temperate', 'Loamy', 'Water 3 times a week', 'Use balanced NPK fertilizer monthly', 'Spray garlic spray bi-weekly', '2024-06-19 00:00:00', 'Lavender, Daisy');
+INSERT INTO public.plant_care_recommendations VALUES (43, 'Rose', 'Flowering', 'Peshawar', 'Subtropical', 'Clay', 'Water 4 times a week', 'Use liquid fertilizer monthly', 'Spray insecticidal soap bi-weekly', '2024-06-20 00:00:00', 'Rose, Jasmine');
+INSERT INTO public.plant_care_recommendations VALUES (44, 'Jasmine', 'Flowering', 'Karachi', 'Tropical', 'Sandy', 'Water 2 times a week', 'Use organic compost monthly', 'Spray neem oil bi-weekly', '2024-06-21 00:00:00', 'Jasmine, Rose');
+INSERT INTO public.plant_care_recommendations VALUES (45, 'Marigold', 'Flowering', 'Lahore', 'Temperate', 'Silty', 'Water 3 times a week', 'Use liquid fertilizer monthly', 'Spray garlic spray bi-weekly', '2024-06-22 00:00:00', 'Marigold, Zinnia');
+INSERT INTO public.plant_care_recommendations VALUES (46, 'Daisy', 'Flowering', 'Islamabad', 'Cool', 'Chalky', 'Water 2 times a week', 'Use balanced NPK fertilizer monthly', 'Spray neem oil bi-weekly', '2024-06-23 00:00:00', 'Daisy, Dahlia');
+INSERT INTO public.plant_care_recommendations VALUES (47, 'Hibiscus', 'Flowering', 'Multan', 'Tropical', 'Loamy', 'Water 3 times a week', 'Use organic compost monthly', 'Spray insecticidal soap bi-weekly', '2024-06-24 00:00:00', 'Hibiscus, Snake Plant');
+INSERT INTO public.plant_care_recommendations VALUES (48, 'Tomato', 'Vegetable', 'Lahore', 'Temperate', 'Loamy', 'Water daily', 'Use NPK 10-10-10 every 2 weeks', 'Use neem oil and crop rotation', '2024-06-25 00:00:00', 'Tomato, Carrot');
+INSERT INTO public.plant_care_recommendations VALUES (49, 'Spinach', 'Vegetable', 'Islamabad', 'Cool', 'Silty', 'Water every other day', 'Apply compost monthly', 'Use insecticidal soap weekly', '2024-06-26 00:00:00', 'Spinach, Cabbage');
+INSERT INTO public.plant_care_recommendations VALUES (50, 'Carrot', 'Vegetable', 'Quetta', 'Continental', 'Sandy', 'Water every 3 days', 'Use bone meal monthly', 'Use row covers', '2024-06-27 00:00:00', 'Carrot, Potato');
+INSERT INTO public.plant_care_recommendations VALUES (51, 'Potato', 'Vegetable', 'Peshawar', 'Subtropical', 'Loamy', 'Water 2 times a week', 'Use potassium-rich fertilizer', 'Apply fungicide bi-weekly', '2024-06-28 00:00:00', 'Potato, Tomato');
+INSERT INTO public.plant_care_recommendations VALUES (52, 'Cabbage', 'Vegetable', 'Multan', 'Arid', 'Clay', 'Water 3 times a week', 'Apply urea every 3 weeks', 'Use neem oil weekly', '2024-06-29 00:00:00', 'Cabbage, Cauliflower');
+INSERT INTO public.plant_care_recommendations VALUES (53, 'Cauliflower', 'Vegetable', 'Karachi', 'Tropical', 'Loamy', 'Water 4 times a week', 'Use compost tea monthly', 'Apply garlic spray', '2024-06-30 00:00:00', 'Cauliflower, Cabbage');
+INSERT INTO public.plant_care_recommendations VALUES (54, 'Mango Tree', 'Fruit', 'Karachi', 'Tropical', 'Loamy', 'Water weekly (deep watering)', 'Apply organic compost in spring', 'Spray neem oil monthly', '2024-07-01 00:00:00', 'Mango Tree, Guava');
+INSERT INTO public.plant_care_recommendations VALUES (55, 'Guava Tree', 'Fruit', 'Lahore', 'Temperate', 'Silty', 'Water 2 times a week', 'Use phosphorus fertilizer monthly', 'Spray copper fungicide monthly', '2024-07-02 00:00:00', 'Guava Tree, Papaya');
+INSERT INTO public.plant_care_recommendations VALUES (56, 'Papaya Tree', 'Fruit', 'Peshawar', 'Subtropical', 'Sandy', 'Water 2-3 times a week', 'Apply compost monthly', 'Use chili garlic spray weekly', '2024-07-03 00:00:00', 'Papaya Tree, Banana');
+INSERT INTO public.plant_care_recommendations VALUES (57, 'Banana Plant', 'Fruit', 'Islamabad', 'Cool', 'Clay', 'Water 3 times a week', 'Use potassium-rich fertilizer', 'Control mealybugs with soap spray', '2024-07-04 00:00:00', 'Banana Plant, Mango Tree');
+INSERT INTO public.plant_care_recommendations VALUES (58, 'Strawberry', 'Fruit', 'Lahore', 'Temperate', 'Loamy', 'Water 2-3 times a week', 'Use phosphorus and potassium fertilizer', 'Apply sulfur spray for fungus', '2024-07-05 00:00:00', 'Strawberry, Cherry');
+INSERT INTO public.plant_care_recommendations VALUES (59, 'Apple Tree', 'Fruit', 'Quetta', 'Continental', 'Chalky', 'Water every 3 days', 'Apply balanced NPK monthly', 'Spray fungicide in spring', '2024-07-06 00:00:00', 'Apple Tree, Peach Tree');
+INSERT INTO public.plant_care_recommendations VALUES (60, 'Peach Tree', 'Fruit', 'Islamabad', 'Cool', 'Loamy', 'Water weekly', 'Apply compost in early spring', 'Spray insecticidal soap monthly', '2024-07-07 00:00:00', 'Peach Tree, Apple Tree');
+INSERT INTO public.plant_care_recommendations VALUES (61, 'Zucchini', 'Vegetable', 'Multan', 'Arid', 'Sandy', 'Water 3-4 times a week', 'Use liquid seaweed fertilizer', 'Control squash bugs manually', '2024-07-08 00:00:00', 'Zucchini, Eggplant');
+INSERT INTO public.plant_care_recommendations VALUES (62, 'Eggplant', 'Vegetable', 'Faisalabad', 'Temperate', 'Silty', 'Water every 2 days', 'Use NPK 5-10-10 bi-weekly', 'Spray neem oil weekly', '2024-07-09 00:00:00', 'Eggplant, Zucchini');
+INSERT INTO public.plant_care_recommendations VALUES (63, 'Cherry Tree', 'Fruit', 'Lahore', 'Temperate', 'Clay', 'Water every 4 days', 'Apply organic fertilizer in spring', 'Use bird netting & fungicide', '2024-07-10 00:00:00', 'Cherry Tree, Strawberry');
+INSERT INTO public.plant_care_recommendations VALUES (64, 'Pomegranate', 'Fruit', 'Quetta', 'Arid', 'Sandy', 'Water once a week', 'Use potassium fertilizer in summer', 'Spray neem oil monthly', '2024-07-11 00:00:00', 'Pomegranate, Guava Tree');
+
+
+--
+-- TOC entry 4908 (class 0 OID 16433)
+-- Dependencies: 229
+-- Data for Name: plant_tracking; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.plant_tracking VALUES (10, NULL, 1, 'my plant', '2025-03-18 18:07:26.38236', '2025-03-18 18:07:26.38236');
+INSERT INTO public.plant_tracking VALUES (11, NULL, 1, 'my plant', '2025-03-18 18:07:26.382687', '2025-03-18 18:07:26.382687');
+INSERT INTO public.plant_tracking VALUES (12, NULL, 2, 'Sunflower', '2025-03-18 18:07:49.640806', '2025-03-18 18:07:49.640806');
+INSERT INTO public.plant_tracking VALUES (13, NULL, 1, 'Sunflower', '2025-03-18 18:30:51.097081', '2025-03-18 18:30:51.097081');
+INSERT INTO public.plant_tracking VALUES (14, NULL, 2, 'Mango', '2025-03-18 18:31:02.455243', '2025-03-18 18:31:02.455243');
+INSERT INTO public.plant_tracking VALUES (15, NULL, 2, '', '2025-04-12 00:58:59.470374', '2025-04-12 00:58:59.470374');
+INSERT INTO public.plant_tracking VALUES (16, NULL, 1, '', '2025-04-13 02:05:05.712468', '2025-04-13 02:05:05.712468');
+INSERT INTO public.plant_tracking VALUES (17, NULL, 2, '', '2025-04-13 14:49:19.896058', '2025-04-13 14:49:19.896058');
+INSERT INTO public.plant_tracking VALUES (18, NULL, 5, '', '2025-04-13 14:49:31.797113', '2025-04-13 14:49:31.797113');
+INSERT INTO public.plant_tracking VALUES (19, NULL, 1, '', '2025-04-13 20:03:38.781979', '2025-04-13 20:03:38.781979');
+INSERT INTO public.plant_tracking VALUES (20, NULL, 4, '', '2025-04-14 01:54:50.623578', '2025-04-14 01:54:50.623578');
+INSERT INTO public.plant_tracking VALUES (21, NULL, 6, 'ga', '2025-04-14 01:55:00.117322', '2025-04-14 01:55:00.117322');
+INSERT INTO public.plant_tracking VALUES (22, NULL, 4, '', '2025-04-14 02:05:31.142889', '2025-04-14 02:05:31.142889');
+INSERT INTO public.plant_tracking VALUES (23, NULL, 4, '', '2025-04-14 02:54:38.479312', '2025-04-14 02:54:38.479312');
+INSERT INTO public.plant_tracking VALUES (24, NULL, 4, 'my plant', '2025-04-14 02:57:07.084221', '2025-04-14 02:57:07.084221');
+INSERT INTO public.plant_tracking VALUES (25, NULL, 6, '', '2025-04-14 03:11:29.265581', '2025-04-14 03:11:29.265581');
+INSERT INTO public.plant_tracking VALUES (26, NULL, 4, '', '2025-04-14 03:14:46.878962', '2025-04-14 03:14:46.878962');
+INSERT INTO public.plant_tracking VALUES (27, NULL, 5, '', '2025-04-14 03:15:17.136094', '2025-04-14 03:15:17.136094');
+INSERT INTO public.plant_tracking VALUES (28, NULL, 5, '', '2025-04-14 03:25:42.034418', '2025-04-14 03:25:42.034418');
+INSERT INTO public.plant_tracking VALUES (29, NULL, 6, '', '2025-04-14 03:25:52.09491', '2025-04-14 03:25:52.09491');
+INSERT INTO public.plant_tracking VALUES (30, NULL, 6, '', '2025-04-14 03:31:45.185423', '2025-04-14 03:31:45.185423');
+INSERT INTO public.plant_tracking VALUES (31, NULL, 8, '', '2025-04-14 03:32:15.624238', '2025-04-14 03:32:15.624238');
+INSERT INTO public.plant_tracking VALUES (32, NULL, 4, '', '2025-04-14 03:35:20.03203', '2025-04-14 03:35:20.03203');
+INSERT INTO public.plant_tracking VALUES (33, NULL, 6, '', '2025-04-14 03:35:25.902603', '2025-04-14 03:35:25.902603');
+INSERT INTO public.plant_tracking VALUES (34, NULL, 5, '', '2025-04-14 03:35:46.303464', '2025-04-14 03:35:46.303464');
+INSERT INTO public.plant_tracking VALUES (35, NULL, 5, '', '2025-04-14 03:36:52.816784', '2025-04-14 03:36:52.816784');
+INSERT INTO public.plant_tracking VALUES (36, NULL, 5, '', '2025-04-14 03:39:10.622197', '2025-04-14 03:39:10.622197');
+INSERT INTO public.plant_tracking VALUES (37, NULL, 4, '', '2025-04-14 03:44:00.911945', '2025-04-14 03:44:00.911945');
+INSERT INTO public.plant_tracking VALUES (38, NULL, 5, '', '2025-04-14 03:53:32.426289', '2025-04-14 03:53:32.426289');
+INSERT INTO public.plant_tracking VALUES (39, NULL, 7, '', '2025-04-14 03:53:39.334409', '2025-04-14 03:53:39.334409');
+INSERT INTO public.plant_tracking VALUES (40, NULL, 6, '', '2025-04-14 03:54:01.079646', '2025-04-14 03:54:01.079646');
+INSERT INTO public.plant_tracking VALUES (41, NULL, 5, '', '2025-04-14 04:04:56.057333', '2025-04-14 04:04:56.057333');
+INSERT INTO public.plant_tracking VALUES (42, NULL, 5, '', '2025-04-14 04:05:01.781502', '2025-04-14 04:05:01.781502');
+INSERT INTO public.plant_tracking VALUES (43, NULL, 7, '', '2025-04-14 04:08:25.893186', '2025-04-14 04:08:25.893186');
+INSERT INTO public.plant_tracking VALUES (44, NULL, 7, '', '2025-04-14 04:08:41.246215', '2025-04-14 04:08:41.246215');
+INSERT INTO public.plant_tracking VALUES (45, NULL, 2, '', '2025-04-14 10:58:37.789601', '2025-04-14 10:58:37.789601');
+INSERT INTO public.plant_tracking VALUES (46, NULL, 5, '', '2025-04-14 10:58:48.931711', '2025-04-14 10:58:48.931711');
+INSERT INTO public.plant_tracking VALUES (47, NULL, 5, '', '2025-04-14 11:03:47.220125', '2025-04-14 11:03:47.220125');
+INSERT INTO public.plant_tracking VALUES (48, NULL, 2, '', '2025-04-14 11:04:37.115783', '2025-04-14 11:04:37.115783');
+INSERT INTO public.plant_tracking VALUES (49, NULL, 4, '', '2025-04-14 11:06:07.57937', '2025-04-14 11:06:07.57937');
+INSERT INTO public.plant_tracking VALUES (50, NULL, 6, '', '2025-04-14 11:06:16.651267', '2025-04-14 11:06:16.651267');
+INSERT INTO public.plant_tracking VALUES (51, NULL, 6, '', '2025-04-14 11:06:27.444875', '2025-04-14 11:06:27.444875');
+INSERT INTO public.plant_tracking VALUES (52, NULL, 10, '', '2025-04-14 11:06:58.772179', '2025-04-14 11:06:58.772179');
+INSERT INTO public.plant_tracking VALUES (53, NULL, 6, '', '2025-04-14 11:07:08.155595', '2025-04-14 11:07:08.155595');
+INSERT INTO public.plant_tracking VALUES (54, NULL, 6, '', '2025-04-14 11:11:42.238435', '2025-04-14 11:11:42.238435');
+INSERT INTO public.plant_tracking VALUES (55, NULL, 6, '', '2025-04-14 11:12:48.36332', '2025-04-14 11:12:48.36332');
+INSERT INTO public.plant_tracking VALUES (56, NULL, 9, '', '2025-04-14 11:12:54.3729', '2025-04-14 11:12:54.3729');
+INSERT INTO public.plant_tracking VALUES (57, NULL, 5, '', '2025-04-14 11:13:01.532224', '2025-04-14 11:13:01.532224');
+INSERT INTO public.plant_tracking VALUES (58, NULL, 5, '', '2025-04-14 11:17:03.884092', '2025-04-14 11:17:03.884092');
+INSERT INTO public.plant_tracking VALUES (59, NULL, 4, '', '2025-04-14 11:25:08.525751', '2025-04-14 11:25:08.525751');
+INSERT INTO public.plant_tracking VALUES (60, NULL, 5, '', '2025-04-14 11:30:37.996044', '2025-04-14 11:30:37.996044');
+INSERT INTO public.plant_tracking VALUES (61, NULL, 8, '', '2025-04-14 11:30:46.091801', '2025-04-14 11:30:46.091801');
+INSERT INTO public.plant_tracking VALUES (62, NULL, 5, '', '2025-04-14 11:33:10.675331', '2025-04-14 11:33:10.675331');
+INSERT INTO public.plant_tracking VALUES (63, NULL, 3, '', '2025-04-14 11:41:36.343254', '2025-04-14 11:41:36.343254');
+INSERT INTO public.plant_tracking VALUES (64, NULL, 6, '', '2025-04-14 11:55:38.78839', '2025-04-14 11:55:38.78839');
+INSERT INTO public.plant_tracking VALUES (65, NULL, 5, '', '2025-04-14 11:55:44.595801', '2025-04-14 11:55:44.595801');
+INSERT INTO public.plant_tracking VALUES (66, NULL, 5, '', '2025-04-14 12:03:44.460447', '2025-04-14 12:03:44.460447');
+INSERT INTO public.plant_tracking VALUES (67, NULL, 6, '', '2025-04-14 12:04:00.211566', '2025-04-14 12:04:00.211566');
+INSERT INTO public.plant_tracking VALUES (68, NULL, 6, '', '2025-04-14 12:04:21.956619', '2025-04-14 12:04:21.956619');
+INSERT INTO public.plant_tracking VALUES (69, NULL, 6, '', '2025-04-14 12:06:56.604144', '2025-04-14 12:06:56.604144');
+INSERT INTO public.plant_tracking VALUES (70, NULL, 6, '', '2025-04-14 13:01:22.75363', '2025-04-14 13:01:22.75363');
+INSERT INTO public.plant_tracking VALUES (71, NULL, 4, '', '2025-04-14 13:14:31.320785', '2025-04-14 13:14:31.320785');
+INSERT INTO public.plant_tracking VALUES (72, NULL, 7, '', '2025-04-14 13:14:35.839978', '2025-04-14 13:14:35.839978');
+INSERT INTO public.plant_tracking VALUES (73, NULL, 6, '', '2025-04-14 13:14:41.400445', '2025-04-14 13:14:41.400445');
+INSERT INTO public.plant_tracking VALUES (74, NULL, 7, '', '2025-04-14 13:14:46.576797', '2025-04-14 13:14:46.576797');
+INSERT INTO public.plant_tracking VALUES (75, NULL, 1, 'my plant ', '2025-04-14 14:36:53.674094', '2025-04-14 14:36:53.674094');
+INSERT INTO public.plant_tracking VALUES (76, NULL, 4, '', '2025-04-14 14:38:03.070443', '2025-04-14 14:38:03.070443');
+INSERT INTO public.plant_tracking VALUES (77, NULL, 6, '', '2025-04-14 14:38:47.176502', '2025-04-14 14:38:47.176502');
+INSERT INTO public.plant_tracking VALUES (78, NULL, 5, '', '2025-04-14 14:40:31.653731', '2025-04-14 14:40:31.653731');
+INSERT INTO public.plant_tracking VALUES (79, NULL, 3, '', '2025-06-14 10:27:53.851951', '2025-06-14 10:27:53.851951');
+INSERT INTO public.plant_tracking VALUES (80, NULL, 8, '', '2025-06-14 10:28:06.29863', '2025-06-14 10:28:06.29863');
+INSERT INTO public.plant_tracking VALUES (81, NULL, 5, '', '2025-06-23 09:13:08.387031', '2025-06-23 09:13:08.387031');
+INSERT INTO public.plant_tracking VALUES (82, NULL, 5, '', '2025-06-23 09:13:13.955336', '2025-06-23 09:13:13.955336');
+INSERT INTO public.plant_tracking VALUES (83, NULL, 4, '', '2025-06-23 09:14:15.922833', '2025-06-23 09:14:15.922833');
+INSERT INTO public.plant_tracking VALUES (84, NULL, 5, '', '2025-06-23 09:14:24.050727', '2025-06-23 09:14:24.050727');
+INSERT INTO public.plant_tracking VALUES (85, NULL, 5, '', '2025-06-23 09:14:36.050017', '2025-06-23 09:14:36.050017');
+INSERT INTO public.plant_tracking VALUES (86, NULL, 4, '', '2025-06-23 09:17:22.973175', '2025-06-23 09:17:22.973175');
+INSERT INTO public.plant_tracking VALUES (87, NULL, 4, '', '2025-06-23 09:17:25.730098', '2025-06-23 09:17:25.730098');
+INSERT INTO public.plant_tracking VALUES (88, NULL, 4, '', '2025-06-24 00:12:04.038869', '2025-06-24 00:12:04.038869');
+INSERT INTO public.plant_tracking VALUES (89, NULL, 3, '', '2025-06-24 00:25:50.185627', '2025-06-24 00:25:50.185627');
+INSERT INTO public.plant_tracking VALUES (90, NULL, 3, '', '2025-06-24 00:26:59.271995', '2025-06-24 00:26:59.271995');
+INSERT INTO public.plant_tracking VALUES (91, NULL, 3, '', '2025-06-24 00:27:30.615618', '2025-06-24 00:27:30.615618');
+INSERT INTO public.plant_tracking VALUES (92, NULL, 4, '', '2025-06-24 01:23:46.867336', '2025-06-24 01:23:46.867336');
+INSERT INTO public.plant_tracking VALUES (93, NULL, 6, '', '2025-06-24 01:23:50.394014', '2025-06-24 01:23:50.394014');
+INSERT INTO public.plant_tracking VALUES (94, NULL, 3, '', '2025-06-24 01:38:06.498519', '2025-06-24 01:38:06.498519');
+INSERT INTO public.plant_tracking VALUES (95, NULL, 4, '', '2025-06-24 01:42:11.787896', '2025-06-24 01:42:11.787896');
+INSERT INTO public.plant_tracking VALUES (96, NULL, 3, '', '2025-06-24 01:45:24.052879', '2025-06-24 01:45:24.052879');
+INSERT INTO public.plant_tracking VALUES (97, NULL, 2, '', '2025-06-24 01:45:38.810842', '2025-06-24 01:45:38.810842');
+INSERT INTO public.plant_tracking VALUES (98, NULL, 6, '', '2025-06-24 01:45:49.50672', '2025-06-24 01:45:49.50672');
+INSERT INTO public.plant_tracking VALUES (99, NULL, 3, '', '2025-06-24 04:18:38.98703', '2025-06-24 04:18:38.98703');
+INSERT INTO public.plant_tracking VALUES (103, 13, 1, '', '2025-06-24 05:30:59.145189', '2025-06-24 05:30:59.145189');
+INSERT INTO public.plant_tracking VALUES (106, 13, 5, 'my potato', '2025-06-24 09:30:06.860213', '2025-06-24 09:30:06.860213');
+INSERT INTO public.plant_tracking VALUES (108, 13, 10, '', '2025-06-25 16:07:47.585524', '2025-06-25 16:07:47.585524');
+INSERT INTO public.plant_tracking VALUES (109, 18, 2, '', '2025-06-26 22:18:02.562357', '2025-06-26 22:18:02.562357');
+INSERT INTO public.plant_tracking VALUES (110, 13, 1, '', '2025-08-30 01:16:27.304665', '2025-08-30 01:16:27.304665');
+INSERT INTO public.plant_tracking VALUES (111, 5, 1, '', '2025-08-30 16:33:26.514105', '2025-08-30 16:33:26.514105');
+
+
+--
+-- TOC entry 4910 (class 0 OID 16439)
+-- Dependencies: 231
+-- Data for Name: plants; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.plants VALUES (1, 'Sunflower', 'Flowering', 'Full Sun', 'Moderate', 'Loamy', 'Temperate', 'Mature', 1, 'Needs full sunlight and minimal water.', '2025-03-18 02:15:14.280228');
+INSERT INTO public.plants VALUES (2, 'Daisy', 'Flowering', 'Partial Sun', 'Low', 'Sandy', 'Cool', 'Budding', 2, 'Deadhead spent flowers to encourage blooming.', '2025-03-18 02:15:14.280228');
+INSERT INTO public.plants VALUES (3, 'Orchid', 'Flowering', 'Indirect Sun', 'High', 'Peaty', 'Tropical', 'Flowering', 3, 'Keep in humid conditions with indirect light.', '2025-03-18 02:15:14.280228');
+INSERT INTO public.plants VALUES (4, 'Lavender', 'Flowering', 'Full Sun', 'Low', 'Chalky', 'Warm', 'Mature', 2, 'Requires well-drained soil and dry climate.', '2025-03-18 02:15:14.280228');
+INSERT INTO public.plants VALUES (5, 'Potato', 'Vegetable', 'Partial Sun', 'Moderate', 'Silty', 'Cool', 'Growing', 2, 'Water deeply but allow soil to dry out between waterings.', '2025-03-18 02:15:14.280228');
+INSERT INTO public.plants VALUES (6, 'Lettuce', 'Vegetable', 'Shade', 'High', 'Loamy', 'Cool', 'Seedling', 1, 'Needs moist soil and cooler temperatures.', '2025-03-18 02:15:14.280228');
+INSERT INTO public.plants VALUES (7, 'Cucumber', 'Vegetable', 'Full Sun', 'High', 'Loamy', 'Warm', 'Flowering', 2, 'Train vines to grow vertically to save space.', '2025-03-18 02:15:14.280228');
+INSERT INTO public.plants VALUES (8, 'Spinach', 'Vegetable', 'Partial Sun', 'Moderate', 'Silty', 'Cool', 'Growing', 1, 'Harvest young leaves for best flavor.', '2025-03-18 02:15:14.280228');
+INSERT INTO public.plants VALUES (9, 'Apple', 'Fruit', 'Full Sun', 'Moderate', 'Loamy', 'Temperate', 'Mature', 5, 'Prune branches regularly for better fruiting.', '2025-03-18 02:15:14.280228');
+INSERT INTO public.plants VALUES (10, 'Banana', 'Fruit', 'Full Sun', 'High', 'Clay', 'Tropical', 'Mature', 4, 'Requires frequent watering and warm temperatures.', '2025-03-18 02:15:14.280228');
+INSERT INTO public.plants VALUES (11, 'Pineapple', 'Fruit', 'Full Sun', 'Low', 'Sandy', 'Tropical', 'Growing', 3, 'Grows best in warm and humid conditions.', '2025-03-18 02:15:14.280228');
+INSERT INTO public.plants VALUES (12, 'Blueberry', 'Fruit', 'Partial Sun', 'High', 'Peaty', 'Cool', 'Flowering', 2, 'Prefers acidic soil and regular watering.', '2025-03-18 02:15:14.280228');
+INSERT INTO public.plants VALUES (13, 'Aloe Vera', 'Flowering', 'Full Sun', 'Low', 'Sandy', 'Arid', 'Mature', 18, 'Aloe Vera needs low water and prefers full sun.', '2024-06-15 00:00:00');
+INSERT INTO public.plants VALUES (14, 'Tulsi', 'Flowering', 'Full Sun', 'Medium', 'Loamy', 'Tropical', 'Vegetative', 12, 'Tulsi needs medium water and prefers full sun.', '2024-06-16 00:00:00');
+INSERT INTO public.plants VALUES (15, 'Money Plant', 'Flowering', 'Partial Shade', 'Low', 'Silty', 'Subtropical', 'Mature', 20, 'Money Plant needs low water and prefers partial shade.', '2024-06-17 00:00:00');
+INSERT INTO public.plants VALUES (16, 'Snake Plant', 'Flowering', 'Shade', 'Low', 'Sandy', 'Temperate', 'Mature', 22, 'Snake Plant needs low water and prefers shade.', '2024-06-18 00:00:00');
+INSERT INTO public.plants VALUES (18, 'Rose', 'Flowering', 'Full Sun', 'Medium', 'Loamy', 'Temperate', 'Budding', 13, 'Rose needs medium water and prefers full sun.', '2024-06-20 00:00:00');
+INSERT INTO public.plants VALUES (19, 'Jasmine', 'Flowering', 'Partial Shade', 'Medium', 'Silty', 'Subtropical', 'Vegetative', 10, 'Jasmine prefers moist soil and indirect sunlight.', '2024-06-21 00:00:00');
+INSERT INTO public.plants VALUES (20, 'Marigold', 'Flowering', 'Full Sun', 'Medium', 'Loamy', 'Tropical', 'Budding', 8, 'Marigold prefers well-drained soil and full sun.', '2024-06-22 00:00:00');
+INSERT INTO public.plants VALUES (22, 'Hibiscus', 'Flowering', 'Full Sun', 'High', 'Loamy', 'Tropical', 'Fruiting', 11, 'Hibiscus needs high water and full sun.', '2024-06-24 00:00:00');
+INSERT INTO public.plants VALUES (23, 'Tomato', 'Vegetable', 'Full Sun', 'High', 'Loamy', 'Tropical', 'Fruiting', 10, 'Tomato needs high water and prefers full sun.', '2024-06-25 00:00:00');
+INSERT INTO public.plants VALUES (26, 'Carrot', 'Vegetable', 'Full Sun', 'Medium', 'Sandy', 'Temperate', 'Mature', 12, 'Carrot needs moderate water and sandy soil.', '2024-06-28 00:00:00');
+INSERT INTO public.plants VALUES (27, 'Spinach', 'Vegetable', 'Partial Shade', 'High', 'Loamy', 'Cool', 'Vegetative', 6, 'Spinach prefers cool climate and moist soil.', '2024-06-29 00:00:00');
+INSERT INTO public.plants VALUES (28, 'Okra', 'Vegetable', 'Full Sun', 'Medium', 'Loamy', 'Tropical', 'Fruiting', 8, 'Okra needs medium water and full sun.', '2024-06-30 00:00:00');
+INSERT INTO public.plants VALUES (29, 'Eggplant', 'Vegetable', 'Full Sun', 'High', 'Loamy', 'Subtropical', 'Fruiting', 9, 'Eggplant prefers warm weather and full sun.', '2024-07-01 00:00:00');
+INSERT INTO public.plants VALUES (30, 'Broccoli', 'Vegetable', 'Full Sun', 'Medium', 'Clay', 'Cool', 'Budding', 10, 'Broccoli prefers cool climate and full sun.', '2024-07-02 00:00:00');
+INSERT INTO public.plants VALUES (31, 'Peas', 'Vegetable', 'Partial Shade', 'Medium', 'Silty', 'Cool', 'Fruiting', 7, 'Peas grow well in cool weather and rich soil.', '2024-07-03 00:00:00');
+INSERT INTO public.plants VALUES (32, 'Cauliflower', 'Vegetable', 'Full Sun', 'Medium', 'Loamy', 'Cool', 'Budding', 11, 'Cauliflower needs consistent moisture.', '2024-07-04 00:00:00');
+INSERT INTO public.plants VALUES (33, 'Mango Tree', 'Fruit', 'Full Sun', 'Medium', 'Loamy', 'Tropical', 'Mature', 30, 'Mango Tree needs medium water and prefers full sun.', '2024-07-05 00:00:00');
+INSERT INTO public.plants VALUES (36, 'Papaya', 'Fruit', 'Full Sun', 'High', 'Sandy', 'Tropical', 'Fruiting', 18, 'Papaya prefers warm and sunny climate.', '2024-07-08 00:00:00');
+INSERT INTO public.plants VALUES (37, 'Guava', 'Fruit', 'Full Sun', 'Medium', 'Loamy', 'Subtropical', 'Mature', 25, 'Guava grows well in sunny, warm places.', '2024-07-09 00:00:00');
+INSERT INTO public.plants VALUES (38, 'Pomegranate', 'Fruit', 'Full Sun', 'Low', 'Sandy', 'Arid', 'Mature', 26, 'Pomegranate needs little water and full sun.', '2024-07-10 00:00:00');
+INSERT INTO public.plants VALUES (39, 'Lemon Tree', 'Fruit', 'Full Sun', 'Medium', 'Loamy', 'Mediterranean', 'Mature', 20, 'Lemon needs moderate water and sun.', '2024-07-11 00:00:00');
+INSERT INTO public.plants VALUES (40, 'Orange Tree', 'Fruit', 'Full Sun', 'Medium', 'Silty', 'Subtropical', 'Mature', 22, 'Orange needs sun and medium water.', '2024-07-12 00:00:00');
+INSERT INTO public.plants VALUES (41, 'Grapes', 'Fruit', 'Full Sun', 'Low', 'Chalky', 'Temperate', 'Mature', 24, 'Grapes need full sun and dry soil.', '2024-07-13 00:00:00');
+INSERT INTO public.plants VALUES (42, 'Strawberry', 'Fruit', 'Full Sun', 'High', 'Sandy', 'Cool', 'Fruiting', 10, 'Strawberries prefer moist soil and cool sun.', '2024-07-14 00:00:00');
+INSERT INTO public.plants VALUES (43, 'Cherry Tree', 'Fruit', 'Full Sun', 'Medium', 'Clay', 'Cool', 'Mature', 28, 'Cherry prefers moist, well-drained soil.', '2024-07-15 00:00:00');
+INSERT INTO public.plants VALUES (44, 'Pineapple', 'Fruit', 'Full Sun', 'Medium', 'Loamy', 'Tropical', 'Mature', 24, 'Pineapple needs full sun and moderate water.', '2024-07-16 00:00:00');
+INSERT INTO public.plants VALUES (45, 'Fig Tree', 'Fruit', 'Full Sun', 'Low', 'Chalky', 'Mediterranean', 'Mature', 26, 'Fig prefers dry soil and sunny spots.', '2024-07-17 00:00:00');
+INSERT INTO public.plants VALUES (46, 'Watermelon', 'Fruit', 'Full Sun', 'High', 'Sandy', 'Tropical', 'Fruiting', 9, 'Watermelon needs high water and heat.', '2024-07-18 00:00:00');
+INSERT INTO public.plants VALUES (47, 'Pumpkin', 'Vegetable', 'Full Sun', 'High', 'Loamy', 'Temperate', 'Fruiting', 8, 'Pumpkin needs warm soil and sunlight.', '2024-07-19 00:00:00');
+INSERT INTO public.plants VALUES (48, 'Chili Pepper', 'Vegetable', 'Full Sun', 'Medium', 'Loamy', 'Subtropical', 'Fruiting', 7, 'Chili grows best in warm, sunny conditions.', '2024-07-20 00:00:00');
+INSERT INTO public.plants VALUES (49, 'Zinnia', 'Flowering', 'Full Sun', 'Medium', 'Silty', 'Tropical', 'Budding', 6, 'Zinnia thrives in sun and needs moist soil.', '2024-07-21 00:00:00');
+INSERT INTO public.plants VALUES (50, 'Dahlia', 'Flowering', 'Full Sun', 'Medium', 'Loamy', 'Subtropical', 'Budding', 7, 'Dahlia blooms well in full sun.', '2024-07-22 00:00:00');
+INSERT INTO public.plants VALUES (51, 'Peach Tree', 'Fruit', 'Full Sun', 'Medium', 'Sandy', 'Temperate', 'Mature', 25, 'Peach grows best in sunny climates.', '2024-07-23 00:00:00');
+INSERT INTO public.plants VALUES (52, 'Beetroot', 'Vegetable', 'Full Sun', 'Medium', 'Loamy', 'Cool', 'Mature', 10, 'Beetroot prefers moist, rich soil.', '2024-07-24 00:00:00');
+INSERT INTO public.plants VALUES (53, 'Basil', 'Flowering', 'Full Sun', 'Medium', 'Loamy', 'Tropical', 'Vegetative', 5, 'Basil grows quickly in sunny areas.', '2024-07-25 00:00:00');
+INSERT INTO public.plants VALUES (54, 'Mint', 'Flowering', 'Partial Shade', 'High', 'Silty', 'Subtropical', 'Vegetative', 4, 'Mint grows in moist, rich soil.', '2024-07-26 00:00:00');
+INSERT INTO public.plants VALUES (55, 'Turnip', 'Vegetable', 'Full Sun', 'Medium', 'Loamy', 'Cool', 'Mature', 8, 'Turnip grows best in cool weather.', '2024-07-27 00:00:00');
+INSERT INTO public.plants VALUES (56, 'Radish', 'Vegetable', 'Full Sun', 'Medium', 'Sandy', 'Cool', 'Mature', 6, 'Radish matures fast in cool soil.', '2024-07-28 00:00:00');
+INSERT INTO public.plants VALUES (57, 'Lettuce', 'Vegetable', 'Partial Shade', 'High', 'Silty', 'Cool', 'Vegetative', 5, 'Lettuce thrives in cool, moist soil.', '2024-07-29 00:00:00');
+INSERT INTO public.plants VALUES (58, 'Cabbage', 'Vegetable', 'Full Sun', 'Medium', 'Clay', 'Cool', 'Budding', 7, 'Cabbage grows in cool climates.', '2024-07-30 00:00:00');
+INSERT INTO public.plants VALUES (59, 'Brinjal', 'Vegetable', 'Full Sun', 'Medium', 'Loamy', 'Tropical', 'Fruiting', 9, 'Brinjal loves warm climate and sun.', '2024-07-31 00:00:00');
+INSERT INTO public.plants VALUES (60, 'Corn', 'Vegetable', 'Full Sun', 'High', 'Loamy', 'Temperate', 'Fruiting', 10, 'Corn needs high water and full sun.', '2024-08-01 00:00:00');
+INSERT INTO public.plants VALUES (61, 'Sweet Potato', 'Vegetable', 'Full Sun', 'Medium', 'Sandy', 'Tropical', 'Mature', 12, 'Sweet Potato prefers sandy, warm soil.', '2024-08-02 00:00:00');
+INSERT INTO public.plants VALUES (62, 'Lime Tree', 'Fruit', 'Full Sun', 'Medium', 'Loamy', 'Tropical', 'Mature', 20, 'Lime Tree grows well in sunny weather.', '2024-08-03 00:00:00');
+INSERT INTO public.plants VALUES (63, 'Coconut Tree', 'Fruit', 'Full Sun', 'High', 'Sandy', 'Tropical', 'Mature', 40, 'Coconut grows best in coastal, warm areas.', '2024-08-04 00:00:00');
+INSERT INTO public.plants VALUES (64, 'Bamboo Plant', 'Flowering', 'Partial Shade', 'High', 'Silty', 'Subtropical', 'Vegetative', 15, 'Bamboo Plant needs high water and prefers partial shade.', '2024-08-05 00:00:00');
+
+
+--
+-- TOC entry 4912 (class 0 OID 16447)
+-- Dependencies: 233
+-- Data for Name: reminders; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.reminders VALUES (70, 110, 'Watering', '2025-08-30 19:05:00', NULL, 'Pending', '2025-08-30 19:01:19.230183', false);
+
+
+--
+-- TOC entry 4914 (class 0 OID 16456)
+-- Dependencies: 235
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.users VALUES (1, 'JohnDoe', 'john@example.com', '$2a$10$VcMXleWDqT.m8Wqw25HPtOue.JJLbghVwwTCR9Gh0IVOGOnnPGz/2', 'Gardener', NULL, NULL, NULL, NULL, '2025-03-18 00:24:56.109998', '2025-03-18 00:24:56.109998');
+INSERT INTO public.users VALUES (3, 'ramzan', 'ahmed@example.com', '$2a$10$Iiju4dCqhLccXgZfBMjxkODdGgCumOtCZaXmC4MEm0NyrF9Q0utO6', 'Supervisor', NULL, NULL, NULL, NULL, '2025-03-18 01:26:51.335891', '2025-03-18 01:26:51.335891');
+INSERT INTO public.users VALUES (4, 'asma ', 'asma@example.co', '$2a$10$rrKXPh1X.0ysDhOS7ZUjmezCA80BUEijM9oqklvQIUQ7w8XJJKNDe', 'Homeowner', NULL, NULL, NULL, NULL, '2025-03-18 01:31:12.070399', '2025-03-18 01:31:12.070399');
+INSERT INTO public.users VALUES (2, 'Ramzan', 'ramzan@example.com', '$2a$10$iSV78DJcI7fh.KwJadzG7uAS/fXP2fa6c6w3C2dSrMIzxhjU2OlR.', 'Homeowner', 'Karachi, Pakistan', 'Polar', 'Loamy', '{"Flower Gardening","Vegetable Gardening"}', '2025-03-18 01:19:01.778242', '2025-03-18 01:51:21.885743');
+INSERT INTO public.users VALUES (5, 'ali', 'ali@example.com', '$2a$10$bNApy8xAUhcr7rBJHyOd/u93E8v3l/AFTb66uvl9niqkaugjxIbXi', 'Supervisor', 'Peshawar', 'Arid', 'Silty', '{"Flower Gardening","Vegetable Gardening"}', '2025-03-18 07:03:25.125031', '2025-03-18 11:15:29.368914');
+INSERT INTO public.users VALUES (11, 'mehak', 'mehakexample@gmail', '$2a$10$TY80G3dAv7jvmZgGsnGbpuydVt7rbyzB0GegD/69bc.aozuuKM74q', 'Homeowner', 'Karachi', 'Arid', 'Clay', '{"Flower Gardening"}', '2025-04-12 00:40:24.566469', '2025-04-12 00:44:23.547802');
+INSERT INTO public.users VALUES (6, 'Osama ', 'osama@example.com', '$2a$10$ww5Xx.bWWw3XkilANMnyYOTK7439L8f0JASgMMC/lfrttDOhcMt4i', 'Homeowner', 'Peshawar', 'Tropical', 'Loamy', '{"Flower Gardening","Vegetable Gardening","Fruit Gardening"}', '2025-04-11 21:32:59.718605', '2025-04-14 13:08:35.719166');
+INSERT INTO public.users VALUES (12, 'arshad ali', 'arshadali@example.com', '$2a$10$q19LXqrb7D5lEOP6wxm9M.NLHuBkYMgQOc62LDRHat2Iv3.xErmWK', 'Supervisor', 'Lahore', 'Temperate', 'Sandy', '{"Fruit Gardening","Vegetable Gardening","Flower Gardening"}', '2025-04-12 19:33:01.736929', '2025-04-12 23:44:18.718371');
+INSERT INTO public.users VALUES (14, 'saim', 'saim@example.com', '$2a$10$yMHKSW9ZJE1J5gLko/yiUuoDUelWmWT4T3Elm8D/UQBeSyDkCdbwa', 'Gardener', NULL, NULL, NULL, NULL, '2025-06-21 05:17:01.856069', '2025-06-21 05:17:01.856069');
+INSERT INTO public.users VALUES (15, 'sami', 'sami@example.com', '$2a$10$1EFAcKIQU1b8UewC6D70kOp1UUOYz/.BIP9Lu5YV8AKL7CyOMSD3a', 'Gardener', NULL, NULL, NULL, NULL, '2025-06-21 05:18:40.032419', '2025-06-21 05:18:40.032419');
+INSERT INTO public.users VALUES (16, 'raja', 'raja@example.com', '$2a$10$TkI.IUzXAgZP3ho7Z1c6UOX/S0ClPMh/pEgONsanLH4RJqNwPcO0i', 'Gardener', NULL, NULL, NULL, NULL, '2025-06-24 05:04:32.410935', '2025-06-24 05:04:32.410935');
+INSERT INTO public.users VALUES (17, 'abdullah', 'abdullah@example.com', '$2a$10$PcbmmiDQJFN4srS5DhSPmeSoHqIOefBo4lo4Z12.wtl6COEq2pPu6', 'Gardener', NULL, NULL, NULL, NULL, '2025-06-25 10:37:22.045903', '2025-06-25 10:37:22.045903');
+INSERT INTO public.users VALUES (18, 'ibrahim', 'ibrahim@example.com', '$2a$10$bqvZwWhfdLQiME71Qeq18uJC7fAmjJ9alseHiYmxlCfWPPJzLPH.m', 'Supervisor', NULL, NULL, NULL, NULL, '2025-06-26 04:53:44.502874', '2025-06-26 04:53:44.502874');
+INSERT INTO public.users VALUES (19, 'lubna ', 'lubna@outlook.cm', '$2a$10$zq/TPiYaK9G2MBZcSmbPp.dehc0YWiTOia9MCvRq46k2xkhx8Vz7m', 'Gardener', NULL, NULL, NULL, NULL, '2025-08-26 00:13:58.601699', '2025-08-26 00:13:58.601699');
+INSERT INTO public.users VALUES (13, 'Raza ', 'raza@example.com', '$2a$10$bwdtGAzT24wQZfR4MsNLke/XkJbvPxUvxxK58czE2OicITqobhOpy', 'Homeowner', 'Karachi', 'Tropical', 'Loamy', '{"Flower Gardening","Fruit Gardening","Vegetable Gardening"}', '2025-06-21 04:46:08.879028', '2025-08-31 01:15:08.744155');
+
+
+--
+-- TOC entry 4931 (class 0 OID 0)
+-- Dependencies: 218
+-- Name: articles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.articles_id_seq', 12, true);
+
+
+--
+-- TOC entry 4932 (class 0 OID 0)
+-- Dependencies: 220
+-- Name: garden_plans_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.garden_plans_id_seq', 10, true);
+
+
+--
+-- TOC entry 4933 (class 0 OID 0)
+-- Dependencies: 222
+-- Name: growth_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.growth_logs_id_seq', 87, true);
+
+
+--
+-- TOC entry 4934 (class 0 OID 0)
+-- Dependencies: 224
+-- Name: health_monitoring_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.health_monitoring_id_seq', 22, true);
+
+
+--
+-- TOC entry 4935 (class 0 OID 0)
+-- Dependencies: 226
+-- Name: observations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.observations_id_seq', 14, true);
+
+
+--
+-- TOC entry 4936 (class 0 OID 0)
+-- Dependencies: 228
+-- Name: plant_care_recommendations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.plant_care_recommendations_id_seq', 38, true);
+
+
+--
+-- TOC entry 4937 (class 0 OID 0)
+-- Dependencies: 230
+-- Name: plant_tracking_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.plant_tracking_id_seq', 111, true);
+
+
+--
+-- TOC entry 4938 (class 0 OID 0)
+-- Dependencies: 232
+-- Name: plants_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.plants_id_seq', 17, true);
+
+
+--
+-- TOC entry 4939 (class 0 OID 0)
+-- Dependencies: 234
+-- Name: reminders_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.reminders_id_seq', 70, true);
+
+
+--
+-- TOC entry 4940 (class 0 OID 0)
+-- Dependencies: 236
+-- Name: users_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.users_user_id_seq', 19, true);
+
+
+--
+-- TOC entry 4720 (class 2606 OID 16476)
+-- Name: articles articles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.articles
+    ADD CONSTRAINT articles_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4722 (class 2606 OID 16478)
+-- Name: garden_plans garden_plans_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.garden_plans
+    ADD CONSTRAINT garden_plans_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4724 (class 2606 OID 16480)
+-- Name: growth_logs growth_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.growth_logs
+    ADD CONSTRAINT growth_logs_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4726 (class 2606 OID 16482)
+-- Name: health_monitoring health_monitoring_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.health_monitoring
+    ADD CONSTRAINT health_monitoring_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4728 (class 2606 OID 16484)
+-- Name: observations observations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.observations
+    ADD CONSTRAINT observations_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4730 (class 2606 OID 16486)
+-- Name: plant_care_recommendations plant_care_recommendations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.plant_care_recommendations
+    ADD CONSTRAINT plant_care_recommendations_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4732 (class 2606 OID 16488)
+-- Name: plant_tracking plant_tracking_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.plant_tracking
+    ADD CONSTRAINT plant_tracking_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4734 (class 2606 OID 16490)
+-- Name: plants plants_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.plants
+    ADD CONSTRAINT plants_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4736 (class 2606 OID 16492)
+-- Name: reminders reminders_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.reminders
+    ADD CONSTRAINT reminders_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4738 (class 2606 OID 16494)
+-- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key UNIQUE (email);
+
+
+--
+-- TOC entry 4740 (class 2606 OID 16496)
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (user_id);
+
+
+--
+-- TOC entry 4742 (class 2606 OID 16498)
+-- Name: users users_username_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_username_key UNIQUE (username);
+
+
+--
+-- TOC entry 4750 (class 2620 OID 16499)
+-- Name: users trigger_update_timestamp; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER trigger_update_timestamp BEFORE UPDATE ON public.users FOR EACH ROW EXECUTE FUNCTION public.update_timestamp();
+
+
+--
+-- TOC entry 4743 (class 2606 OID 16500)
+-- Name: garden_plans garden_plans_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.garden_plans
+    ADD CONSTRAINT garden_plans_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(user_id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4744 (class 2606 OID 16505)
+-- Name: growth_logs growth_logs_tracking_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.growth_logs
+    ADD CONSTRAINT growth_logs_tracking_id_fkey FOREIGN KEY (tracking_id) REFERENCES public.plant_tracking(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4745 (class 2606 OID 16510)
+-- Name: health_monitoring health_monitoring_tracking_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.health_monitoring
+    ADD CONSTRAINT health_monitoring_tracking_id_fkey FOREIGN KEY (tracking_id) REFERENCES public.plant_tracking(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4746 (class 2606 OID 16515)
+-- Name: observations observations_tracking_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.observations
+    ADD CONSTRAINT observations_tracking_id_fkey FOREIGN KEY (tracking_id) REFERENCES public.plant_tracking(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4747 (class 2606 OID 16520)
+-- Name: plant_tracking plant_tracking_plant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.plant_tracking
+    ADD CONSTRAINT plant_tracking_plant_id_fkey FOREIGN KEY (plant_id) REFERENCES public.plants(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4748 (class 2606 OID 16525)
+-- Name: plant_tracking plant_tracking_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.plant_tracking
+    ADD CONSTRAINT plant_tracking_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(user_id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4749 (class 2606 OID 16530)
+-- Name: reminders reminders_tracking_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.reminders
+    ADD CONSTRAINT reminders_tracking_id_fkey FOREIGN KEY (tracking_id) REFERENCES public.plant_tracking(id) ON DELETE CASCADE;
+
+
+-- Completed on 2025-08-31 01:27:11
+
+--
+-- PostgreSQL database dump complete
+--
+
